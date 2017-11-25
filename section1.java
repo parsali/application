@@ -3,6 +3,7 @@ package com.burs.parsa.myapplication;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -33,11 +34,14 @@ import java.util.ArrayList;
 /**
  * Created by Parsa on 17/09/2017.
  */
-public class section1 extends  android.support.v4.app.Fragment  {
+public class section1 extends  android.support.v4.app.Fragment   {
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     ArrayList<news> myDataset = new ArrayList();
+    Context context;
+    MainActivity mainActivity ;
+   public onItem item;
 
 
 
@@ -48,7 +52,10 @@ public class section1 extends  android.support.v4.app.Fragment  {
         mAdapter = new MyAdapter(myDataset,getContext());
         View rootView = inflater.inflate(R.layout.section1, container, false);
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.my_recycler_view);
+        context = inflater.getContext();
 
+        if(context==null)
+            Log.d("is null","yes");
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
@@ -89,6 +96,8 @@ public class section1 extends  android.support.v4.app.Fragment  {
                                 news.title=current.getString("title");
                                 news.description=current.getString("description");
                                 news.imageUrl = current.getString("urlToImage");
+                                news.url=current.getString("url");
+                                news.publishDate=current.getString("publishedAt");
                                 myDataset.add(news);
                                 Log.d("title",news.title);
                                 mAdapter.notifyDataSetChanged();
@@ -113,15 +122,19 @@ public class section1 extends  android.support.v4.app.Fragment  {
         MySingleton.getInstance(inflater.getContext()).addToRequestQueue(jsObjRequest);
 
         mRecyclerView.setAdapter(mAdapter);
+
         return rootView;
 
     }
+
+
 }
  class MyAdapter extends RecyclerView.Adapter<MyAdapter.myViewHolder> {
      private ArrayList<news> mDataset;
      Context context;
      MySingleton volleySingleton;
      ImageLoader imageLoader;
+     onItem onItem;
 
 
 
@@ -146,12 +159,25 @@ public class section1 extends  android.support.v4.app.Fragment  {
      public myViewHolder onCreateViewHolder(ViewGroup parent,
                                             int viewType) {
          // create a new view
-         View v = LayoutInflater.from(parent.getContext())
+         final View v = LayoutInflater.from(parent.getContext())
                  .inflate(R.layout.text_view, parent, false);
 
          // set the view's size, margins, paddings and layout parameters
 
-         myViewHolder holder = new myViewHolder(v);
+         myViewHolder holder = new myViewHolder(v,context);
+          onItem = new onItem() {
+             @Override
+             public void onItemClick(int pos) {
+                 Intent intent = new Intent(context,information.class);
+                 intent.putExtra("title",mDataset.get(pos).title);
+                 intent.putExtra("description",mDataset.get(pos).description);
+                 intent.putExtra("url",mDataset.get(pos).url);
+                 intent.putExtra("imageUrl",mDataset.get(pos).imageUrl);
+                 intent.putExtra("date",mDataset.get(pos).publishDate);;
+                 v.getContext().startActivity(intent);
+             }
+         };
+
          return holder;
      }
 
@@ -185,11 +211,11 @@ public class section1 extends  android.support.v4.app.Fragment  {
          return mDataset.size();
      }
 
-     class myViewHolder extends RecyclerView.ViewHolder {
+     class myViewHolder extends RecyclerView.ViewHolder  {
          TextView textView;
          ImageView imageView;
 
-         myViewHolder(View listView) {
+         myViewHolder(View listView, final Context context) {
              super(listView);
              textView = (TextView) listView.findViewById(R.id.textView);
              imageView  = (ImageView)listView.findViewById(R.id.image);
@@ -198,10 +224,11 @@ public class section1 extends  android.support.v4.app.Fragment  {
                  @Override
                  public void onClick(View v) {
                      int itemPosition = getLayoutPosition();
+                     onItem.onItemClick(getLayoutPosition());
 
-                     Toast.makeText(context, String.valueOf(itemPosition), Toast.LENGTH_LONG).show();
                  }
              });
+
 
          }
 

@@ -9,4 +9,8 @@ public class news {
     public String title;
     public String description;
     public String imageUrl;
+    public String url;
+    public String publishDate;
+
+
 }
